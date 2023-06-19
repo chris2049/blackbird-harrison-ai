@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import validator from 'email-validator'
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -12,6 +13,21 @@ import logo from '../../assets/logo.svg';
 
 export default function LoginForm() {
   const [showAlert, setShowAlert] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [emailHelperText, setEmailHelperText] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordHelperText, setPasswordHelperText] = useState('');
+  const [activeError, setActiveError] = useState(false);
+
+  useEffect(()=>{
+    setPasswordError(false);
+    setPasswordHelperText('');
+    setEmailError(false);
+    setEmailHelperText('');
+    
+    setActiveError(false)
+  }, [activeError]);
+
   const validateForm = (event) => {
     event.preventDefault()
     const data = new FormData(event.currentTarget);
@@ -19,7 +35,28 @@ export default function LoginForm() {
     const password = data.get('password');
 
     // Add validation code here
+    const passwordValidation = (_password) =>{
+      return (_password.length >= 8 &&
+      /[A-Z]/.test(_password) &&
+      /[a-z]/.test(_password) &&
+      /\d/.test(_password) &&
+      /[^A-Za-z0-9]/.test(_password)
+      );
+    }
 
+    setShowAlert('Login Successful');
+
+    if(!passwordValidation(password)){
+      setShowAlert(false);
+      setPasswordError(true);
+      setPasswordHelperText('password doesnt fill requirement');
+    }
+
+    if(!validator.validate(email)){
+      setShowAlert(false);
+      setEmailError(true);
+      setEmailHelperText('invalid email');
+    }
   }
 
   const handleSubmit = (event) => {
@@ -30,8 +67,10 @@ export default function LoginForm() {
       password: data.get('password'),
     });
     validateForm(event);
-    setShowAlert("Login Successful");
+    
   };
+
+  const onChange = () => setActiveError(true);
 
   return (
     <>
@@ -78,25 +117,32 @@ export default function LoginForm() {
             Sign in
           </Typography>
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+
             <TextField
+              error={emailError}
               margin="normal"
               required
               fullWidth
               id="email"
               label="Email Address"
+              helperText={emailHelperText}
               name="email"
               autoComplete="email"
+              onChange={onChange}
               autoFocus
             />
             <TextField
+              error={passwordError}
               margin="normal"
               required
               fullWidth
               name="password"
               label="Password"
+              helperText={passwordHelperText}
               type="password"
               id="password"
               autoComplete="current-password"
+              onChange={onChange}
             />
             <Button
               type="submit"
